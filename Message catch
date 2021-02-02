@@ -1,0 +1,22 @@
+import discord
+import random
+import json
+import os
+import asyncio
+from discord.ext import commands
+from replit import db
+
+client = commands.Bot(command_prefix = ('/t ' ,  '/t' , '/T' , '/T '))
+client.remove_command('help')
+
+@client.event
+async def on_ready():
+    await client.change_presence(status=discord.Status.idle, activity=discord.Game('Looking for /t help'))
+    print('bot is ready.')
+
+@client.event
+async def on_message(message):
+    if message.content == "mmm":
+        await message.channel.send('MMMMMMMMMM ME GUSTA')
+
+client.run('TOKEN')
