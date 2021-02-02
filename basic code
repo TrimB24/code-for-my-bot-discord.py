@@ -1,0 +1,160 @@
+import discord
+import random
+import json
+import os
+import asyncio
+from discord.ext import commands
+
+client = commands.Bot(command_prefix = ('/t ' ,  '/t' , '/T' , '/T '))
+client.remove_command('help')
+
+@client.event
+async def on_ready():
+    await client.change_presence(status=discord.Status.idle, activity=discord.Game('Looking for /t help'))
+    print('bot is ready.')
+
+@client.command()
+async def hello(ctx):
+   await ctx.send('HELLO!')
+
+@client.command(aliases=['8ball'])
+async def _8ball(ctx, *, question):
+    responses = ['As I see it, yes.',
+                 'Ask again later.',
+                 'Better not tell you now.',
+                 'Cannot predict now.',
+                 'Concentrate and ask again.',
+                 'Don’t count on it.',
+                 'It is certain.',
+                 'It is decidedly so.',
+                 'Most likely.',
+                 'My reply is no.',
+                 'My sources say no.'
+                 'Outlook not so good.'
+                 'Outlook good.',
+                 'Reply hazy, try again.',
+                 'Signs point to yes.',
+                 'Very doubtful.',
+                 'Without a doubt.',
+                 'Yes.',
+                 'Yes – definitely.',
+                 'You may rely on it.']
+    await ctx.send(f'Question: {question}\nAnswer: {random.choice(responses)}')
+
+
+@client.command()
+async def hi(ctx):
+   await ctx.send('HI!')
+
+@client.command()
+async def servers(ctx):
+    print(str(client.guilds))
+
+@client.command()
+async def kick(ctx, member : discord.Member, *, reason=None):
+    await member.kick(reason=reason)
+
+@commands.command() # uses command decorators, in this case inside a cog
+@commands.has_permissions(ban_members=True) # only people that have permissions to ban users can use this command
+async def ban(self, ctx, user: discord.Member, *, reason): # The person banning someone has to ping the user to ban, and input a reason. Remove self if you are outside a cog.
+    await ctx.guild.ban(user, reason=reason) # Bans the user.
+    await user.send(f"You have been banned in {ctx.guild} for {reason}") # Private messages user.
+    await ctx.send(f"{user} has been successfully banned.") # messages channel to tell everyone it worked
+
+@client.command()
+async def unban(ctx, *, member):
+    banned_users = await ctx.guild.bans()
+    member_name, member_discriminator = member.split('#')
+
+    for ban_entry in banned_users:
+        user = ban_entry.user
+
+        if (user.name, user.discriminator) == (member_name, member_discriminator):
+            await ctx.guild.unban(user)
+            await ct.send(f'Unbanned {user.mention}')
+            return 
+
+@client.command(description="Mutes the specified user.")
+@commands.has_permissions(manage_messages=True)
+async def mute(ctx, member: discord.Member, *, reason=None):
+    guild = ctx.guild
+    mutedRole = discord.utils.get(guild.roles, name="Muted")
+
+    if not mutedRole:
+        mutedRole = await guild.create_role(name="Muted")
+
+        for channel in guild.channels:
+            await channel.set_permissions(mutedRole, speak=False, send_messages=False, read_message_history=True, read_messages=False)
+    embed = discord.Embed(title="muted", description=f"{member.mention} was muted ", colour=discord.Colour.light_gray())
+    embed.add_field(name="reason:", value=reason, inline=False)
+    await ctx.send(embed=embed)
+    await member.add_roles(mutedRole, reason=reason)
+    await member.send(f" you have been muted from: {guild.name} reason: {reason}")
+
+@client.command(description="Unmutes a specified user.")
+@commands.has_permissions(manage_messages=True)
+async def unmute(ctx, member: discord.Member):
+   mutedRole = discord.utils.get(ctx.guild.roles, name="Muted")
+
+   await member.remove_roles(mutedRole)
+   await member.send(f" you have unmutedd from: - {ctx.guild.name}")
+   embed = discord.Embed(title="unmute", description=f" unmuted-{member.mention}",colour=discord.Colour.light_gray())
+   await ctx.send(embed=embed)
+
+@client.command()
+async def Bot_Info(ctx): # Embed is the name of the command: >Embed
+	
+    embed = discord.Embed(title="Info about TRIMBBY",description="Bot was made in python 3.9 using vscode 2019",color=discord.Color.green())
+	
+    embed.add_field(name="tutorials",value="Lucas#6947, elytra.f#3331, Middledot#5281",inline=True)
+    embed.add_field(name="Created By:",value="TrimB24#1207",inline=False)
+    
+    await ctx.send(embed=embed)
+
+@client.command()
+async def bot_info(ctx): # Embed is the name of the command: >Embed
+	
+    embed = discord.Embed(title="Info about TRIMBBY",description="Bot was made in python 3.9 using vscode 2019",color=discord.Color.green())
+	
+    embed.add_field(name="tutorials",value="Lucas#6947, elytra.f#3331, Middledot#5281",inline=True)
+    embed.add_field(name="Created By:",value="TrimB24#1207",inline=False)
+    
+    await ctx.send(embed=embed)
+
+@client.command()
+async def help(ctx): # Embed is the name of the command: >Embed
+	
+    embed = discord.Embed(title="commands:",description="POG",color=discord.Color.green())
+	
+    embed.add_field(name="``commands:``",value="``kick, ban, unban,mute, unmute, 8ball, hi, bot_info, and hello``",inline=True)
+    embed.add_field(name="``for more help:``",value="``Contact TrimB24#1207 or join this server https://discord.gg/DmdbEeKQ3W ``",inline=False)
+    
+    await ctx.send(embed=embed)
+
+@client.command()
+async def Help(ctx): # Embed is the name of the command: >Embed
+	
+    embed = discord.Embed(title="commands:",description="POG",color=discord.Color.green())
+	
+    embed.add_field(name="``commands:``",value="``kick, ban, unban,mute, unmute, 8ball, hi, bot info, and hello``",inline=True)
+    embed.add_field(name="``for more help:``",value="``Contact TrimB24#1207 or join this server https://discord.gg/DmdbEeKQ3W ``",inline=False)
+    
+    await ctx.send(embed=embed)
+
+@client.command()
+async def clear(ctx, amount=5):
+	await ctx.channel.purge(limit=ammount)
+
+@client.event
+async def on_guild_join(guild):
+    for channel in guild.text_channels:
+        if channel.permissions_for(guild.me).send_messages:
+            await channel.send('Hey there! Thanks for adding me to your amazing server')
+        break
+
+@client.command()
+async def die(ctx):
+   await ctx.send("Okay you're dead")
+
+
+client.run('TOKEN')
